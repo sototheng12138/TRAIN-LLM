@@ -139,7 +139,11 @@ def vali(args, accelerator, model, vali_data, vali_loader, criterion, mae_metric
     total_mae_loss = []
     model.eval()
     with torch.no_grad():
-        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in tqdm(enumerate(vali_loader)):
+        for i, batch in tqdm(enumerate(vali_loader)):
+            if len(batch) == 5:
+                batch_x, batch_y, batch_x_mark, batch_y_mark, _ = batch
+            else:
+                batch_x, batch_y, batch_x_mark, batch_y_mark = batch
             batch_x = batch_x.float().to(accelerator.device)
             batch_y = batch_y.float()
 
@@ -164,6 +168,8 @@ def vali(args, accelerator, model, vali_data, vali_loader, criterion, mae_metric
                     outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
             outputs, batch_y = accelerator.gather_for_metrics((outputs, batch_y))
+            if getattr(args, 'loss', None) == 'MASE':
+                batch_x = accelerator.gather(batch_x).contiguous()
 
             f_dim = -1 if args.features == 'MS' else 0
             outputs = outputs[:, -args.pred_len:, f_dim:]
@@ -172,7 +178,10 @@ def vali(args, accelerator, model, vali_data, vali_loader, criterion, mae_metric
             pred = outputs.detach()
             true = batch_y.detach()
 
-            loss = criterion(pred, true)
+            if args.loss == 'MASE':
+                loss = criterion(batch_x.float().to(accelerator.device), pred, true, torch.ones_like(true))
+            else:
+                loss = criterion(pred, true)
 
             mae_loss = mae_metric(pred, true)
 
@@ -184,6 +193,47 @@ def vali(args, accelerator, model, vali_data, vali_loader, criterion, mae_metric
 
     model.train()
     return total_loss, total_mae_loss
+
+
+def vali_with_rmse(args, accelerator, model, data_loader, criterion, mae_metric):
+    """与 vali 相同，但多返回 RMSE，用于训练结束后对 best checkpoint 做一次测试集评估。"""
+    total_loss = []
+    total_mae = []
+    total_rmse = []
+    model.eval()
+    with torch.no_grad():
+        for i, batch in enumerate(data_loader):
+            if len(batch) == 5:
+                batch_x, batch_y, batch_x_mark, batch_y_mark, _ = batch
+            else:
+                batch_x, batch_y, batch_x_mark, batch_y_mark = batch
+            batch_x = batch_x.float().to(accelerator.device)
+            batch_y = batch_y.float()
+            batch_x_mark = batch_x_mark.float().to(accelerator.device)
+            batch_y_mark = batch_y_mark.float().to(accelerator.device)
+            dec_inp = torch.zeros_like(batch_y[:, -args.pred_len:, :]).float()
+            dec_inp = torch.cat([batch_y[:, :args.label_len, :], dec_inp], dim=1).float().to(accelerator.device)
+            if args.use_amp:
+                with torch.cuda.amp.autocast():
+                    outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark) if not args.output_attention else model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
+            else:
+                outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark) if not args.output_attention else model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
+            outputs, batch_y = accelerator.gather_for_metrics((outputs, batch_y))
+            if getattr(args, 'loss', None) == 'MASE':
+                batch_x = accelerator.gather(batch_x).contiguous()
+            f_dim = -1 if args.features == 'MS' else 0
+            outputs = outputs[:, -args.pred_len:, f_dim:]
+            batch_y = batch_y[:, -args.pred_len:, f_dim:].to(accelerator.device)
+            pred = outputs.detach()
+            true = batch_y.detach()
+            if args.loss == 'MASE':
+                total_loss.append(criterion(batch_x.float().to(accelerator.device), pred, true, torch.ones_like(true)).item())
+            else:
+                total_loss.append(criterion(pred, true).item())
+            total_mae.append(mae_metric(pred, true).item())
+            total_rmse.append(torch.sqrt(torch.mean((pred - true) ** 2)).item())
+    model.train()
+    return np.average(total_loss), np.average(total_mae), np.average(total_rmse)
 
 
 def test(args, accelerator, model, train_loader, vali_loader, criterion):
@@ -226,6 +276,8 @@ def test(args, accelerator, model, train_loader, vali_loader, criterion):
 def load_content(args):
     if 'ETT' in args.data:
         file = 'ETT'
+    elif getattr(args, 'model_comment', None) and args.model_comment not in ('none', ''):
+        file = args.model_comment
     else:
         file = args.data
     with open('./dataset/prompt_bank/{0}.txt'.format(file), 'r') as f:

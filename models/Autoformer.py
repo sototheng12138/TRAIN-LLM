@@ -87,12 +87,14 @@ class Model(nn.Module):
                 configs.d_model * configs.seq_len, configs.num_class)
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+        dtype = x_enc.dtype
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(
             1).repeat(1, self.pred_len, 1)
         zeros = torch.zeros([x_dec.shape[0], self.pred_len,
-                             x_dec.shape[2]], device=x_enc.device)
+                             x_dec.shape[2]], device=x_enc.device, dtype=dtype)
         seasonal_init, trend_init = self.decomp(x_enc)
+        seasonal_init, trend_init = seasonal_init.to(dtype), trend_init.to(dtype)
         # decoder input
         trend_init = torch.cat(
             [trend_init[:, -self.label_len:, :], mean], dim=1)
@@ -142,6 +144,12 @@ class Model(nn.Module):
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
+        # 与模型权重 dtype 一致，避免 DeepSpeed/AMP 下 input(Float) 与 weight(BFloat16) 不一致
+        dtype = next(self.parameters()).dtype
+        x_enc = x_enc.to(dtype)
+        x_mark_enc = x_mark_enc.to(dtype)
+        x_dec = x_dec.to(dtype)
+        x_mark_dec = x_mark_dec.to(dtype)
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
             dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]

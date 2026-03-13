@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 480" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <marker id="ar4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#2c3e50"/>
+    </marker>
+    <linearGradient id="inG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5a9fb8"/>
+      <stop offset="100%" stop-color="#3d7a94"/>
+    </linearGradient>
+    <linearGradient id="coreG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6b5b95"/>
+      <stop offset="100%" stop-color="#4a3d6b"/>
+    </linearGradient>
+    <linearGradient id="jointG4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2d6a4f"/>
+      <stop offset="100%" stop-color="#1b4332"/>
+    </linearGradient>
+    <linearGradient id="outG4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#b8860b"/>
+      <stop offset="100%" stop-color="#8b6914"/>
+    </linearGradient>
+  </defs>
+  <title>Full Pipeline with Dispatch Log</title>
+  <!-- Row 1: Flow -->
+  <rect x="20" y="40" width="120" height="70" rx="6" fill="url(#inG)" stroke="#2c5f75" stroke-width="1.5"/>
+  <text x="80" y="68" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Time Series</text>
+  <text x="80" y="88" text-anchor="middle" fill="#e0f4f8" font-size="10">+ Prompts</text>
+  <line x1="140" y1="75" x2="180" y2="75" stroke="#2c3e50" stroke-width="2" marker-end="url(#ar4)"/>
+  <rect x="180" y="30" width="160" height="90" rx="6" fill="url(#coreG)" stroke="#3d2d5a" stroke-width="1.5"/>
+  <text x="260" y="58" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Patching</text>
+  <text x="260" y="78" text-anchor="middle" fill="#e8e4f0" font-size="10">Frozen LLM</text>
+  <text x="260" y="108" text-anchor="middle" fill="#d0cce0" font-size="10">Latent z</text>
+  <line x1="340" y1="75" x2="380" y2="75" stroke="#2c3e50" stroke-width="2" marker-end="url(#ar4)"/>
+  <rect x="380" y="30" width="200" height="90" rx="6" fill="url(#jointG4)" stroke="#1b4332" stroke-width="1.5"/>
+  <text x="480" y="58" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Joint Inference</text>
+  <text x="480" y="78" text-anchor="middle" fill="#b8e0c8" font-size="10">Num Head + Aux Head</text>
+  <text x="480" y="98" text-anchor="middle" fill="#b8e0c8" font-size="10">(Ours, label-free aux)</text>
+  <line x1="580" y1="75" x2="620" y2="75" stroke="#2c3e50" stroke-width="2" marker-end="url(#ar4)"/>
+  <rect x="620" y="30" width="180" height="90" rx="6" fill="url(#outG4)" stroke="#7a5a1a" stroke-width="1.5"/>
+  <text x="710" y="58" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Interpretable Output</text>
+  <text x="710" y="78" text-anchor="middle" fill="#fff8e6" font-size="10">Y_hat, dispatch, days</text>
+  <text x="710" y="98" text-anchor="middle" fill="#ffe4b3" font-size="10">+ template text</text>
+
+  <!-- Row 2: Outputs detail -->
+  <text x="410" y="148" text-anchor="middle" fill="#333" font-size="11" font-weight="bold">Outputs (inference)</text>
+  <rect x="40" y="158" width="220" height="100" rx="6" fill="#f5f5f5" stroke="#999" stroke-width="1"/>
+  <text x="150" y="182" text-anchor="middle" fill="#333" font-size="10" font-weight="bold">Numerical</text>
+  <text x="150" y="202" text-anchor="middle" fill="#555" font-size="9">Predicted series Y_hat(t,c)</text>
+  <text x="150" y="222" text-anchor="middle" fill="#555" font-size="9">Trend / continuity / totals</text>
+  <text x="150" y="242" text-anchor="middle" fill="#555" font-size="9">(rule-based semantics)</text>
+  <rect x="300" y="158" width="220" height="100" rx="6" fill="#f5f5f5" stroke="#999" stroke-width="1"/>
+  <text x="410" y="182" text-anchor="middle" fill="#333" font-size="10" font-weight="bold">Auxiliary (event)</text>
+  <text x="410" y="202" text-anchor="middle" fill="#555" font-size="9">Dispatch (1) / Idle (0)</text>
+  <text x="410" y="222" text-anchor="middle" fill="#555" font-size="9">Confidence e.g. 99%</text>
+  <text x="410" y="242" text-anchor="middle" fill="#555" font-size="9">Active days: count from Y_hat</text>
+  <rect x="560" y="158" width="220" height="100" rx="6" fill="#fff8e6" stroke="#b8860b" stroke-width="1"/>
+  <text x="670" y="182" text-anchor="middle" fill="#333" font-size="10" font-weight="bold">Dispatch Log (template)</text>
+  <text x="670" y="202" text-anchor="middle" fill="#555" font-size="9">Dispatch exists ~99% (3 days).</text>
+  <text x="670" y="222" text-anchor="middle" fill="#555" font-size="9">Consistent with volume.</text>
+  <text x="670" y="242" text-anchor="middle" fill="#555" font-size="9">Suggestion: fleet and payload.</text>
+
+  <!-- Row 3: Example log box -->
+  <rect x="40" y="278" width="740" height="172" rx="8" fill="#fafaf8" stroke="#b8860b" stroke-width="2"/>
+  <text x="410" y="308" text-anchor="middle" fill="#5a3d0a" font-size="14" font-weight="bold">Example: TRAIN-LLM Dispatch Log (deterministic, zero hallucination)</text>
+  <rect x="60" y="322" width="700" height="110" rx="4" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="410" y="348" text-anchor="middle" fill="#333" font-size="11">Dispatch activities exist with ~99% confidence (3 active days in the forecast window).</text>
+  <text x="410" y="368" text-anchor="middle" fill="#333" font-size="11">Consistent with predicted volume. No LLM hallucination; decoding is template-based.</text>
+  <text x="410" y="388" text-anchor="middle" fill="#333" font-size="11">Suggestion: Focus on fleet and payload capacity.</text>
+  <text x="410" y="412" text-anchor="middle" fill="#777" font-size="9">Trend / continuity / prototype reasoning (if enabled) appear above in semantic_output.</text>
+</svg>

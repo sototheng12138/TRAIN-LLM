@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 200" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <marker id="m0" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#2c3e50"/>
+    </marker>
+    <linearGradient id="mIn" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5a9fb8"/>
+      <stop offset="100%" stop-color="#3d7a94"/>
+    </linearGradient>
+    <linearGradient id="mCore" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6b5b95"/>
+      <stop offset="100%" stop-color="#4a3d6b"/>
+    </linearGradient>
+    <linearGradient id="mOut" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2d6a4f"/>
+      <stop offset="100%" stop-color="#1b4332"/>
+    </linearGradient>
+  </defs>
+  <title>TIME-LLM Minimal</title>
+  <rect x="24" y="72" width="140" height="56" rx="6" fill="url(#mIn)" stroke="#2c5f75" stroke-width="1.5"/>
+  <text x="94" y="102" text-anchor="middle" fill="white" font-size="12" font-weight="bold">TS + Prompts</text>
+  <line x1="164" y1="100" x2="204" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#m0)"/>
+  <rect x="204" y="52" width="200" height="96" rx="6" fill="url(#mCore)" stroke="#3d2d5a" stroke-width="1.5"/>
+  <text x="304" y="82" text-anchor="middle" fill="white" font-size="12" font-weight="bold">TIME-LLM Backbone</text>
+  <text x="304" y="102" text-anchor="middle" fill="#e8e4f0" font-size="10">Patching, Frozen LLM, Latent z</text>
+  <line x1="404" y1="100" x2="444" y2="100" stroke="#2c3e50" stroke-width="2" marker-end="url(#m0)"/>
+  <rect x="444" y="52" width="212" height="96" rx="6" fill="url(#mOut)" stroke="#1b4332" stroke-width="1.5"/>
+  <text x="550" y="82" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Joint Inference (Ours)</text>
+  <text x="550" y="102" text-anchor="middle" fill="#b8e0c8" font-size="10">Y_hat + Aux (dispatch, days)</text>
+  <text x="550" y="122" text-anchor="middle" fill="#b8e0c8" font-size="10">Label-free; template decoding</text>
+  <text x="340" y="188" text-anchor="middle" fill="#555" font-size="10" font-style="italic">Event-driven reprogramming with label-free auxiliary deduction.</text>
+</svg>

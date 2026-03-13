@@ -1,4 +1,5 @@
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4
+from data_provider_pretrain.data_loader import Dataset_Custom_Iron
 from torch.utils.data import DataLoader
 
 data_dict = {
@@ -10,6 +11,7 @@ data_dict = {
     'Traffic': Dataset_Custom,
     'Weather': Dataset_Custom,
     'm4': Dataset_M4,
+    'custom': Dataset_Custom_Iron,
 }
 
 
@@ -43,7 +45,7 @@ def data_provider(args, flag):
             seasonal_patterns=args.seasonal_patterns
         )
     else:
-        data_set = Data(
+        kwargs = dict(
             root_path=args.root_path,
             data_path=args.data_path,
             flag=flag,
@@ -53,8 +55,11 @@ def data_provider(args, flag):
             timeenc=timeenc,
             freq=freq,
             percent=percent,
-            seasonal_patterns=args.seasonal_patterns
+            seasonal_patterns=args.seasonal_patterns,
         )
+        if args.data == 'custom' and hasattr(Data, '__init__'):
+            kwargs['return_multivariate'] = getattr(args, 'multivariate', False)
+        data_set = Data(**kwargs)
     data_loader = DataLoader(
         data_set,
         batch_size=batch_size,

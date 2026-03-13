@@ -185,6 +185,46 @@ class PatchEmbedding(nn.Module):
         return self.dropout(x), n_vars
 
 
+class MultiScalePatchEmbedding(nn.Module):
+    """多尺度融合 patch：多组 (patch_len, stride) 分别做 patch + embedding，插值到统一长度后拼接并投影。消融用。"""
+    def __init__(self, d_model, seq_len, patch_len, stride, dropout, scales=None):
+        super(MultiScalePatchEmbedding, self).__init__()
+        if scales is None:
+            scales = [(8, 4), (16, 8), (32, 16)]  # 细、中、粗尺度
+        self.scales = scales
+        self.d_model = d_model
+        self.target_patch_nums = int((seq_len - patch_len) / stride + 2)
+
+        self.branches = nn.ModuleList()
+        for pl, st in scales:
+            pad = ReplicationPad1d((0, st))
+            emb = TokenEmbedding(pl, d_model)
+            self.branches.append(nn.ModuleDict({'pad': pad, 'emb': emb}))
+        self.dropout = nn.Dropout(dropout)
+        self.fuse = nn.Linear(d_model * len(scales), d_model)
+
+    def _one_scale(self, x, branch, patch_len, stride):
+        # x: (B, N, T)
+        x = branch['pad'](x)
+        x = x.unfold(dimension=-1, size=patch_len, step=stride)
+        x = torch.reshape(x, (x.shape[0] * x.shape[1], x.shape[2], x.shape[3]))
+        x = branch['emb'](x)
+        return x
+
+    def forward(self, x):
+        n_vars = x.shape[1]
+        out_list = []
+        for (pl, st), branch in zip(self.scales, self.branches):
+            o = self._one_scale(x, branch, pl, st)
+            # o: (B*N, P_i, d_model). Interpolate to target_patch_nums on dim=1
+            if o.shape[1] != self.target_patch_nums:
+                o = F.interpolate(o.permute(0, 2, 1), size=self.target_patch_nums, mode='linear', align_corners=False).permute(0, 2, 1)
+            out_list.append(o)
+        x = torch.cat(out_list, dim=-1)
+        x = self.fuse(x)
+        return self.dropout(x), n_vars
+
+
 class DataEmbedding_wo_time(nn.Module):
     def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
         super(DataEmbedding_wo_time, self).__init__()

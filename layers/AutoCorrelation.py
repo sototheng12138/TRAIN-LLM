@@ -57,8 +57,8 @@ class AutoCorrelation(nn.Module):
         head = values.shape[1]
         channel = values.shape[2]
         length = values.shape[3]
-        # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).cuda()
+        # index init (use values.device for CPU/CUDA compatibility)
+        init_index = torch.arange(length, device=values.device).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1)
         # find top k
         top_k = int(self.factor * math.log(length))
         mean_value = torch.mean(torch.mean(corr, dim=1), dim=1)
@@ -83,8 +83,8 @@ class AutoCorrelation(nn.Module):
         head = values.shape[1]
         channel = values.shape[2]
         length = values.shape[3]
-        # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).cuda()
+        # index init (use values.device for CPU/CUDA compatibility)
+        init_index = torch.arange(length, device=values.device).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1)
         # find top k
         top_k = int(self.factor * math.log(length))
         weights, delay = torch.topk(corr, top_k, dim=-1)
@@ -110,17 +110,21 @@ class AutoCorrelation(nn.Module):
             values = values[:, :L, :, :]
             keys = keys[:, :L, :, :]
 
-        # period-based dependencies
-        q_fft = torch.fft.rfft(queries.permute(0, 2, 3, 1).contiguous(), dim=-1)
-        k_fft = torch.fft.rfft(keys.permute(0, 2, 3, 1).contiguous(), dim=-1)
+        # period-based dependencies (torch.fft.rfft 不支持 bfloat16，用 float32 算完再转回)
+        orig_dtype = queries.dtype
+        q_f = queries.permute(0, 2, 3, 1).contiguous().float()
+        k_f = keys.permute(0, 2, 3, 1).contiguous().float()
+        q_fft = torch.fft.rfft(q_f, dim=-1)
+        k_fft = torch.fft.rfft(k_f, dim=-1)
         res = q_fft * torch.conj(k_fft)
-        corr = torch.fft.irfft(res, dim=-1)
+        corr = torch.fft.irfft(res, dim=-1).to(orig_dtype)
 
-        # time delay agg
+        # time delay agg (内部用 float32，输出转回原 dtype 以匹配后续 bf16 层)
         if self.training:
             V = self.time_delay_agg_training(values.permute(0, 2, 3, 1).contiguous(), corr).permute(0, 3, 1, 2)
         else:
             V = self.time_delay_agg_inference(values.permute(0, 2, 3, 1).contiguous(), corr).permute(0, 3, 1, 2)
+        V = V.to(orig_dtype)
 
         if self.output_attention:
             return (V.contiguous(), corr.permute(0, 3, 1, 2))

@@ -58,6 +58,10 @@ class Model(nn.Module):
         seasonal_init, trend_init = self.decompsition(x)
         seasonal_init, trend_init = seasonal_init.permute(
             0, 2, 1), trend_init.permute(0, 2, 1)
+        # 与 Linear 权重 dtype 一致，避免 DeepSpeed/AMP 下 mat1(Float) 与 mat2(BFloat16) 不一致
+        dtype = self.Linear_Seasonal.weight.dtype
+        seasonal_init = seasonal_init.to(dtype)
+        trend_init = trend_init.to(dtype)
         if self.individual:
             seasonal_output = torch.zeros([seasonal_init.size(0), seasonal_init.size(1), self.pred_len],
                                           dtype=seasonal_init.dtype).to(seasonal_init.device)
