@@ -1,3 +1,5 @@
+> **Fork 说明**：本仓库基于 [Time-LLM](https://github.com/KimMeen/Time-LLM) 进行扩展（如 Iron/铁路相关实验等），版权与论文引用归属原作者。使用本 fork 时请同时引用原论文（见下方 Citation）。
+
 <div align="center">
   <!-- <h1><b> Time-LLM </b></h1> -->
   <!-- <h2><b> Time-LLM </b></h2> -->
