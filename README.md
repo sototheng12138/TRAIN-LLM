@@ -14,22 +14,6 @@
 - **Baselines:** DLinear, Autoformer, iTransformer, XGBoost, ARIMA, LSTM, Prophet (fair comparison under the same split).  
 ---
 
-## Graphical abstract（repository workflow）
-
-```mermaid
-flowchart LR
-  A["dataset/<br/>2023_2025_Iron_data.csv"] --> B["Data loader<br/>7:1:2 + StandardScaler"]
-  B --> C["Train<br/>run_main.py / scripts/Iron*.sh"]
-  C --> D["checkpoints/<br/>trained weights"]
-  D --> E["Eval<br/>run_eval.py / Eval_Iron*.sh"]
-  E --> F["Metrics<br/>eval_result*.txt"]
-  E --> G["Figures<br/>plot_full_testset_from_npy.py"]
-  B --> H["Baselines<br/>run_baseline_xgb_arima.py"]
-  H --> F
-```
-
----
-
 ## Abstract
 
 This repository contains the **experimental code** used for multivariate long-horizon forecasting with **Time-LLM** (default **seq_len=96, pred_len=48**) on the same dataset and split as the paper, plus deterministic and deep-learning baselines. Evaluation emits metrics in **standardized space** and after **inverse transform** to original units, and can export **2×2 four-channel prediction curves** (English labels, consistent styling with baselines).  
