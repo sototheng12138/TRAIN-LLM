@@ -1,7 +1,6 @@
 <div align="center">
 
-# 铁路多变量货运预测与 Time-LLM 复现代码
-
+# TRAIN-LLM:ecoupled Time-series Reprogramming with Auxiliary Inference Network for zero-inflated railway dispatching
 **Companion repository for the associated manuscript (Elsevier CAS single-column style).**
 
 </div>
@@ -13,8 +12,6 @@
 - **Time-LLM** training, evaluation, and visualization scripts for multichannel daily iron-freight series.  
 - **Data split and metrics** aligned with the paper: **Train:Val:Test = 7:1:2**, `StandardScaler` fit on training data only; standardized and inverse-transformed MAE/RMSE.  
 - **Baselines:** DLinear, Autoformer, iTransformer, XGBoost, ARIMA, LSTM, Prophet (fair comparison under the same split).  
-- **Figures:** full-test **paper_v4** 2×2 curves (English subplot titles, shared palette with baselines); Chronos zero-shot evaluation script included.  
-
 ---
 
 ## Graphical abstract（repository workflow）
