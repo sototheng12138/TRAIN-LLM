@@ -1,0 +1,7 @@
+# Optional: traditional baselines & Chronos (install as needed)
+# pip install -r requirements-optional.txt
+xgboost>=2.0.0
+prophet>=1.1
+statsmodels>=0.14.0
+# Chronos-2 zero-shot (see scripts/Eval_Iron_chronos_zero_shot.py)
+# pip install chronos-forecasting  # or follow Amazon Chronos-2 install docs

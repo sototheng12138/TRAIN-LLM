@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+.env
+.venv/
+venv/
+*.log
+checkpoints/
+wandb/
+.DS_Store
+.idea/
+.vscode/
